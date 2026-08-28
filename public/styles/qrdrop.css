@@ -3,11 +3,21 @@
     --ink: #121212;
     --muted: #68686c;
     --line: #121212;
+    --hairline: rgba(18, 18, 18, 0.12);
     --accent: #ff3d1f;
     --accent-ink: #fff;
     --success: #16a34a;
     --danger: #dc2626;
     --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --font-display: "Press Start 2P", -apple-system, sans-serif;
+}
+
+:root[data-theme="dark"] {
+    --paper: #131316;
+    --ink: #f2f1ed;
+    --muted: #9c9ca2;
+    --line: #f2f1ed;
+    --hairline: rgba(255, 255, 255, 0.16);
 }
 
 * { box-sizing: border-box; }
@@ -27,6 +37,55 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
+    transition: background-color 0.35s ease, color 0.35s ease;
+}
+
+.topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.controls {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.icon-btn {
+    position: relative;
+    background: transparent;
+    border: 1.5px solid var(--line);
+    color: var(--ink);
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-family: var(--font-display);
+    font-size: 0.55rem;
+    padding: 0;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.08s ease;
+}
+
+.icon-btn:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+.icon-btn:active { transform: scale(0.93); }
+
+.theme-icon {
+    width: 18px;
+    height: 18px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.4) rotate(-40deg);
+    transition: opacity 0.25s var(--ease-out), transform 0.25s var(--ease-out);
+}
+
+.theme-icon.active {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1) rotate(0deg);
 }
 
 .wrap {
@@ -57,10 +116,15 @@ body {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    font-family: "Archivo Black", -apple-system, sans-serif;
-    font-size: 1rem;
+    font-family: var(--font-display);
+    font-size: 0.7rem;
     letter-spacing: 0.02em;
     text-transform: uppercase;
+    cursor: pointer;
+    border: none;
+    background: none;
+    color: inherit;
+    padding: 0;
 }
 
 .wordmark .sq {
@@ -71,12 +135,12 @@ body {
 }
 
 h1 {
-    font-family: "Archivo Black", -apple-system, sans-serif;
-    font-size: 2.1rem;
+    font-family: var(--font-display);
+    font-size: 1.4rem;
     font-weight: 400;
     margin: 0;
-    line-height: 1.22;
-    letter-spacing: -0.01em;
+    line-height: 1.7;
+    letter-spacing: 0;
 }
 
 .subtitle {
@@ -129,10 +193,11 @@ h1 {
 }
 
 .room-code {
-    font-family: "Archivo Black", -apple-system, sans-serif;
-    font-size: 2.3rem;
-    letter-spacing: 0.07em;
-    line-height: 1.25;
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    letter-spacing: 0.18em;
+    padding-left: 0.18em;
+    line-height: 2;
     display: block;
     color: #fff;
     perspective: 300px;
@@ -239,7 +304,7 @@ h1 {
     align-items: center;
     gap: 0.75rem;
     padding: 0.75rem 0;
-    border-bottom: 1px solid rgba(18,18,18,0.12);
+    border-bottom: 1px solid var(--hairline);
     animation: rise 0.4s var(--ease-out) both;
 }
 
@@ -323,10 +388,10 @@ h1 {
 .action-btn {
     border-radius: 0;
     padding: 1.3rem 1.25rem;
-    font-size: 1rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
+    font-family: var(--font-display);
+    font-size: 0.8rem;
+    font-weight: 400;
+    letter-spacing: 0;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -361,7 +426,7 @@ input[type=file] { display: none; }
 .progress-track {
     width: 100%;
     height: 4px;
-    background: rgba(18,18,18,0.12);
+    background: var(--hairline);
     overflow: hidden;
     display: none;
 }
@@ -385,6 +450,97 @@ input[type=file] { display: none; }
 .feedback.err { color: var(--danger); font-weight: 700; }
 .feedback.info { color: var(--muted); }
 
+/* About dialog */
+.about-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    z-index: 50;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.about-overlay.show {
+    display: flex;
+    opacity: 1;
+}
+
+.about-panel {
+    background: var(--paper);
+    border: 2px solid var(--line);
+    max-width: 340px;
+    width: 100%;
+    padding: 1.75rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    text-align: center;
+    transform: scale(0.92) translateY(8px);
+    opacity: 0;
+    transition: transform 0.22s var(--ease-out), opacity 0.22s var(--ease-out);
+}
+
+.about-overlay.show .about-panel {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+}
+
+.about-panel .sq {
+    width: 14px;
+    height: 14px;
+    background: var(--accent);
+}
+
+.about-panel h2 {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    margin: 0;
+    letter-spacing: 0.02em;
+}
+
+.about-panel p {
+    color: var(--muted);
+    font-size: 0.85rem;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.about-panel a.about-github {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border: 1.5px solid var(--line);
+    color: var(--ink);
+    text-decoration: none;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    padding: 0.6rem 0.9rem;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.about-panel a.about-github:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+.about-panel a.about-github svg { width: 15px; height: 15px; }
+
+.about-close {
+    align-self: flex-end;
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 0.75rem;
+    padding: 0;
+    margin-bottom: -0.5rem;
+}
+
+.about-close:hover { color: var(--ink); }
+
 @media (prefers-reduced-motion: reduce) {
     .wrap > *,
     .file-row,
@@ -394,7 +550,9 @@ input[type=file] { display: none; }
     .progress-track.show,
     .qr-frame,
     .qr-frame.connected,
-    .room-code .rc-char {
+    .room-code .rc-char,
+    .about-overlay,
+    .about-panel {
         animation: none !important;
         opacity: 1 !important;
         transform: none !important;

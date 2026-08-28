@@ -62,6 +62,7 @@ class QRDropSender {
     constructor() {
         this.$choose = document.getElementById('choose-screen');
         this.$invalid = document.getElementById('invalid-screen');
+        this.$invalidReason = document.getElementById('invalid-reason');
         this.$btnPhotos = document.getElementById('btn-photos');
         this.$btnFiles = document.getElementById('btn-files');
         this.$inputPhotos = document.getElementById('input-photos');
@@ -74,23 +75,27 @@ class QRDropSender {
 
         this.targetPeerId = null;
         this.qualityMode = 'original';
+        this._lastFeedback = { key: 'connecting', kind: 'info' };
+        this._lastInvalidKey = null;
 
         this.localization = new Localization();
         this.persistentStorage = new PersistentStorage();
         this.broadcast = new BrowserTabsConnector();
 
+        window.addEventListener('lang-changed', () => this._onLangChanged());
+
         const params = new URLSearchParams(location.search);
         this.roomId = params.get('room_id');
 
         if (!this.roomId) {
-            this._showInvalid('Falta el código de la sala. Escanea el QR de nuevo.');
+            this._showInvalid('invalid_missing');
             return;
         }
 
         Events.on('ws-connected', _ => this._onWsConnected());
         Events.on('peers', e => this._onPeers(e.detail));
         Events.on('peer-joined', e => this._onPeerJoined(e.detail));
-        Events.on('public-room-id-invalid', _ => this._showInvalid('Este código ya no es válido. Pide uno nuevo.'));
+        Events.on('public-room-id-invalid', _ => this._showInvalid('invalid_expired'));
         Events.on('peer-connected', _ => this._setReady(true));
         Events.on('peer-disconnected', _ => this._setReady(false));
         Events.on('set-progress', e => this._onProgress(e.detail));
@@ -131,20 +136,17 @@ class QRDropSender {
         if (!this.targetPeerId) this.targetPeerId = message.peer.id;
     }
 
-    _showInvalid(text) {
+    _showInvalid(key) {
+        this._lastInvalidKey = key;
         this.$choose.style.display = 'none';
         this.$invalid.style.display = 'flex';
-        this.$invalid.querySelector('p').textContent = text;
+        this.$invalidReason.textContent = I18n.t(key);
     }
 
     _setReady(connected) {
         this.$btnPhotos.disabled = !connected;
         this.$btnFiles.disabled = !connected;
-        if (!connected) {
-            this._setFeedback('Se perdió la conexión con la PC.', 'err');
-        } else {
-            this._setFeedback('Conectado. Elige qué enviar.', 'info');
-        }
+        this._setFeedback(connected ? 'ready_to_send' : 'lost_connection', connected ? 'info' : 'err');
     }
 
     async _send(inputEl, isPhotos) {
@@ -153,20 +155,20 @@ class QRDropSender {
 
         let files = originalFiles;
         if (isPhotos && this.qualityMode === 'fast') {
-            this._setFeedback('Comprimiendo…', 'info');
+            this._setFeedback('compressing', 'info');
             files = await prepareFilesForFastMode(originalFiles);
         }
 
         this.$progressTrack.classList.add('show');
         this.$progressFill.style.width = '0%';
-        this._setFeedback(`Preparando ${files.length} archivo(s)…`, 'info');
+        this._setFeedback('preparing_files', 'info', { n: files.length });
 
         Events.fire('files-selected', { to: this.targetPeerId, files: files });
         inputEl.value = '';
     }
 
     _onAccepted() {
-        this._setFeedback('Enviando…', 'info');
+        this._setFeedback('sending', 'info');
     }
 
     _onProgress(detail) {
@@ -177,12 +179,20 @@ class QRDropSender {
     _onSent() {
         this.$progressTrack.classList.remove('show');
         this.$progressFill.style.width = '0%';
-        this._setFeedback('Enviado. Puedes elegir más.', 'ok');
+        this._setFeedback('sent_ok', 'ok');
     }
 
-    _setFeedback(text, kind) {
-        this.$feedback.textContent = text;
+    _setFeedback(key, kind, vars) {
+        this.$feedback.textContent = I18n.t(key, vars);
         this.$feedback.className = 'feedback ' + kind;
+        this._lastFeedback = { key, kind, vars };
+    }
+
+    _onLangChanged() {
+        if (this._lastInvalidKey) {
+            this.$invalidReason.textContent = I18n.t(this._lastInvalidKey);
+        }
+        this._setFeedback(this._lastFeedback.key, this._lastFeedback.kind, this._lastFeedback.vars);
     }
 }
 

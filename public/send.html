@@ -4,38 +4,48 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#fafafa">
-    <meta name="color-scheme" content="light">
+    <meta name="color-scheme" content="light dark">
     <title>QRDrop | Enviar</title>
     <meta name="description" content="Elige fotos o archivos y envíalos directo a tu PC.">
     <link rel="icon" sizes="96x96" href="images/favicon-96x96.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles/qrdrop.css">
 </head>
 <body>
     <div class="wrap">
-        <div class="wordmark"><span class="sq"></span>QRDrop</div>
+        <div class="topbar">
+            <button class="wordmark" id="btn-about"><span class="sq"></span>QRDrop</button>
+            <div class="controls">
+                <button class="icon-btn" id="btn-lang" aria-label="Idioma">ES</button>
+                <button class="icon-btn" id="btn-theme" aria-label="Tema">
+                    <svg id="theme-icon-auto" class="theme-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a9 9 0 0 0 0 18 9 9 0 0 0 0-18Zm0 0v18"/></svg>
+                    <svg id="theme-icon-light" class="theme-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>
+                    <svg id="theme-icon-dark" class="theme-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z"/></svg>
+                </button>
+            </div>
+        </div>
 
         <div id="choose-screen" style="display:flex; flex-direction:column; gap:1.5rem; width:100%;">
             <div>
-                <h1>¿Qué envías?</h1>
-                <p class="subtitle">Se manda directo a la pantalla que escaneaste, sin subir a ningún servidor.</p>
+                <h1 data-i18n="send_title">¿Qué envías?</h1>
+                <p class="subtitle" data-i18n="send_subtitle">Se manda directo a la pantalla que escaneaste, sin subir a ningún servidor.</p>
             </div>
 
             <div class="quality-toggle">
-                <button type="button" id="q-original" class="active">Calidad original</button>
-                <button type="button" id="q-fast">Envío rápido</button>
+                <button type="button" id="q-original" class="active" data-i18n="quality_original">Calidad original</button>
+                <button type="button" id="q-fast" data-i18n="quality_fast">Envío rápido</button>
             </div>
 
             <div class="action-grid">
                 <button class="action-btn primary" id="btn-photos" disabled>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 8a2 2 0 0 1 2-2h1.2a2 2 0 0 0 1.7-.9l.6-.9a2 2 0 0 1 1.7-.9h1.6a2 2 0 0 1 1.7.9l.6.9a2 2 0 0 0 1.7.9H18a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8Z"/><circle cx="12" cy="13" r="3.5"/></svg>
-                    Fotos
+                    <span data-i18n="btn_photos">Fotos</span>
                 </button>
                 <button class="action-btn secondary" id="btn-files" disabled>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"/></svg>
-                    Archivos
+                    <span data-i18n="btn_files">Archivos</span>
                 </button>
             </div>
 
@@ -45,12 +55,25 @@
             <div class="progress-track" id="progress-track">
                 <div class="progress-fill" id="progress-fill"></div>
             </div>
-            <div class="feedback info" id="feedback">Conectando…</div>
+            <div class="feedback info" id="feedback" data-i18n="connecting">Conectando…</div>
         </div>
 
         <div id="invalid-screen" style="display:none; flex-direction:column; gap:1rem;">
-            <h1>Código no válido</h1>
-            <p class="subtitle" style="margin-top:0;"></p>
+            <h1 data-i18n="invalid_title">Código no válido</h1>
+            <p class="subtitle" id="invalid-reason" style="margin-top:0;"></p>
+        </div>
+    </div>
+
+    <div class="about-overlay" id="about-overlay">
+        <div class="about-panel">
+            <button class="about-close" id="about-close" aria-label="Cerrar">✕</button>
+            <span class="sq"></span>
+            <h2>QRDrop</h2>
+            <p data-i18n="about_claim">La forma más rápida de mandar fotos y archivos entre tu celular y tu PC. Directo entre dispositivos, sin subir nada a un servidor.</p>
+            <a class="about-github" href="https://github.com/mxnueel/PairDrop" target="_blank" rel="noreferrer">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.57.1.78-.25.78-.55v-2.14c-3.2.7-3.87-1.36-3.87-1.36-.53-1.33-1.28-1.69-1.28-1.69-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.76 2.7 1.25 3.36.96.1-.75.4-1.25.73-1.54-2.56-.29-5.25-1.28-5.25-5.69 0-1.26.45-2.29 1.19-3.09-.12-.29-.51-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11.02 11.02 0 0 1 5.8 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.8 1.19 1.83 1.19 3.09 0 4.42-2.7 5.4-5.27 5.68.42.36.78 1.07.78 2.16v3.2c0 .3.21.66.79.55A10.52 10.52 0 0 0 23.5 12c0-6.35-5.15-11.5-11.5-11.5Z"/></svg>
+                <span data-i18n="about_github">Ver en GitHub</span>
+            </a>
         </div>
     </div>
 
@@ -59,6 +82,8 @@
     <script src="scripts/persistent-storage.js"></script>
     <script src="scripts/localization.js"></script>
     <script src="scripts/network.js"></script>
+    <script src="scripts/i18n.js"></script>
+    <script src="scripts/app-common.js"></script>
     <script src="scripts/app-send.js"></script>
 </body>
 </html>

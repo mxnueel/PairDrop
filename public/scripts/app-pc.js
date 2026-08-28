@@ -18,10 +18,12 @@ class QRDropReceiver {
         this.$fileList = document.getElementById('file-list');
         this.$emptyHint = document.getElementById('empty-hint');
         this.$downloadAllBtn = document.getElementById('btn-download-all');
+        this.$downloadAllLabel = document.getElementById('download-all-label');
 
         this.connectedPeers = 0;
         this.roomId = null;
         this.receivedFiles = [];
+        this._lastStatus = { state: 'waiting', key: 'connecting', vars: undefined };
 
         this.localization = new Localization();
         this.persistentStorage = new PersistentStorage();
@@ -34,6 +36,7 @@ class QRDropReceiver {
         Events.on('peer-disconnected', _ => this._onPeerDisconnected());
         Events.on('files-transfer-request', e => this._onFilesTransferRequest(e.detail));
         Events.on('files-received', e => this._onFilesReceived(e.detail));
+        window.addEventListener('lang-changed', () => this._setStatus(this._lastStatus.state, this._lastStatus.key, this._lastStatus.vars));
 
         this.$downloadAllBtn.addEventListener('click', () => this._downloadAll());
 
@@ -44,7 +47,7 @@ class QRDropReceiver {
     }
 
     _onWsConnected() {
-        this._setStatus('waiting', 'Esperando que escanees el código…');
+        this._setStatus('waiting', 'waiting_scan');
         Events.fire('create-public-room');
     }
 
@@ -80,28 +83,30 @@ class QRDropReceiver {
 
     _onPeerJoined() {
         this.connectedPeers++;
-        this._setStatus('connected', this._connectedLabel());
+        this._setConnectedStatus();
         this.$qrFrame.classList.add('connected');
     }
 
     _onPeerConnected() {
-        this._setStatus('connected', this._connectedLabel());
+        this._setConnectedStatus();
         this.$qrFrame.classList.add('connected');
     }
 
-    _connectedLabel() {
-        return this.connectedPeers > 1
-            ? `${this.connectedPeers} teléfonos conectados`
-            : 'Teléfono conectado';
+    _setConnectedStatus() {
+        if (this.connectedPeers > 1) {
+            this._setStatus('connected', 'phones_connected', { n: this.connectedPeers });
+        } else {
+            this._setStatus('connected', 'phone_connected');
+        }
     }
 
     _onPeerDisconnected() {
         this.connectedPeers = Math.max(0, this.connectedPeers - 1);
         if (this.connectedPeers === 0) {
-            this._setStatus('waiting', 'Esperando que escanees el código…');
+            this._setStatus('waiting', 'waiting_scan');
             this.$qrFrame.classList.remove('connected');
         } else {
-            this._setStatus('connected', this._connectedLabel());
+            this._setConnectedStatus();
         }
     }
 
@@ -148,7 +153,7 @@ class QRDropReceiver {
         dl.className = 'dl';
         dl.href = url;
         dl.download = file.name;
-        dl.textContent = 'Descargar';
+        dl.textContent = I18n.t('download');
 
         row.appendChild(icon);
         row.appendChild(meta);
@@ -160,8 +165,7 @@ class QRDropReceiver {
         if (!this.receivedFiles.length) return;
 
         this.$downloadAllBtn.disabled = true;
-        const originalLabel = this.$downloadAllBtn.innerHTML;
-        this.$downloadAllBtn.textContent = 'Preparando zip…';
+        this.$downloadAllLabel.textContent = I18n.t('preparing_zip');
 
         try {
             const usedNames = new Set();
@@ -191,7 +195,7 @@ class QRDropReceiver {
         } catch (e) {
             console.error('Could not build zip:', e);
         } finally {
-            this.$downloadAllBtn.innerHTML = originalLabel;
+            this.$downloadAllLabel.textContent = I18n.t('download_all');
             this.$downloadAllBtn.disabled = false;
         }
     }
@@ -202,9 +206,10 @@ class QRDropReceiver {
         return (bytes / 1024 / 1024).toFixed(1) + ' MB';
     }
 
-    _setStatus(state, text) {
+    _setStatus(state, key, vars) {
         this.$statusDot.className = 'status-dot ' + state;
-        this.$statusText.textContent = text;
+        this.$statusText.textContent = I18n.t(key, vars);
+        this._lastStatus = { state, key, vars };
     }
 }
 
