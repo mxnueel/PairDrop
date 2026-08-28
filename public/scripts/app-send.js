@@ -143,7 +143,7 @@ class QRDropSender {
         if (!connected) {
             this._setFeedback('Se perdió la conexión con la PC.', 'err');
         } else {
-            this._setFeedback('Conectado — elige qué enviar', 'info');
+            this._setFeedback('Conectado. Elige qué enviar.', 'info');
         }
     }
 
@@ -177,7 +177,7 @@ class QRDropSender {
     _onSent() {
         this.$progressTrack.classList.remove('show');
         this.$progressFill.style.width = '0%';
-        this._setFeedback('✅ Enviado. Puedes elegir más.', 'ok');
+        this._setFeedback('Enviado. Puedes elegir más.', 'ok');
     }
 
     _setFeedback(text, kind) {

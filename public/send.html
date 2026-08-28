@@ -3,20 +3,25 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#0b0b0d">
-    <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#fafafa">
+    <meta name="color-scheme" content="light">
     <title>QRDrop | Enviar</title>
     <meta name="description" content="Elige fotos o archivos y envíalos directo a tu PC.">
     <link rel="icon" sizes="96x96" href="images/favicon-96x96.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles/qrdrop.css">
 </head>
 <body>
     <div class="wrap">
-        <div class="wordmark">QR<span>Drop</span></div>
+        <div class="wordmark"><span class="sq"></span>QRDrop</div>
 
-        <div id="choose-screen" style="display:flex; flex-direction:column; align-items:center; gap:1.5rem; width:100%;">
-            <h1>¿Qué quieres enviar?</h1>
-            <p class="subtitle">Se manda directo a la pantalla que escaneaste, sin subir a ningún servidor.</p>
+        <div id="choose-screen" style="display:flex; flex-direction:column; gap:1.5rem; width:100%;">
+            <div>
+                <h1>¿Qué envías?</h1>
+                <p class="subtitle">Se manda directo a la pantalla que escaneaste, sin subir a ningún servidor.</p>
+            </div>
 
             <div class="quality-toggle">
                 <button type="button" id="q-original" class="active">Calidad original</button>
@@ -25,11 +30,11 @@
 
             <div class="action-grid">
                 <button class="action-btn primary" id="btn-photos" disabled>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8a2 2 0 0 1 2-2h1.2a2 2 0 0 0 1.7-.9l.6-.9a2 2 0 0 1 1.7-.9h1.6a2 2 0 0 1 1.7.9l.6.9a2 2 0 0 0 1.7.9H18a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8Z"/><circle cx="12" cy="13" r="3.5"/></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 8a2 2 0 0 1 2-2h1.2a2 2 0 0 0 1.7-.9l.6-.9a2 2 0 0 1 1.7-.9h1.6a2 2 0 0 1 1.7.9l.6.9a2 2 0 0 0 1.7.9H18a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8Z"/><circle cx="12" cy="13" r="3.5"/></svg>
                     Fotos
                 </button>
                 <button class="action-btn secondary" id="btn-files" disabled>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"/></svg>
                     Archivos
                 </button>
             </div>
@@ -43,9 +48,9 @@
             <div class="feedback info" id="feedback">Conectando…</div>
         </div>
 
-        <div id="invalid-screen" style="display:none; flex-direction:column; align-items:center; gap:1rem; text-align:center;">
+        <div id="invalid-screen" style="display:none; flex-direction:column; gap:1rem;">
             <h1>Código no válido</h1>
-            <p style="color: var(--text-dim);"></p>
+            <p class="subtitle" style="margin-top:0;"></p>
         </div>
     </div>
 
