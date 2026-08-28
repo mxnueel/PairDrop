@@ -80,13 +80,19 @@ class QRDropReceiver {
 
     _onPeerJoined() {
         this.connectedPeers++;
-        this._setStatus('connected', 'Teléfono conectado');
+        this._setStatus('connected', this._connectedLabel());
         this.$qrFrame.classList.add('connected');
     }
 
     _onPeerConnected() {
-        this._setStatus('connected', 'Teléfono conectado');
+        this._setStatus('connected', this._connectedLabel());
         this.$qrFrame.classList.add('connected');
+    }
+
+    _connectedLabel() {
+        return this.connectedPeers > 1
+            ? `${this.connectedPeers} teléfonos conectados`
+            : 'Teléfono conectado';
     }
 
     _onPeerDisconnected() {
@@ -94,6 +100,8 @@ class QRDropReceiver {
         if (this.connectedPeers === 0) {
             this._setStatus('waiting', 'Esperando que escanees el código…');
             this.$qrFrame.classList.remove('connected');
+        } else {
+            this._setStatus('connected', this._connectedLabel());
         }
     }
 
