@@ -23,8 +23,12 @@ class QRDropReceiver {
         this.$lightbox = document.getElementById('lightbox-overlay');
         this.$lightboxImg = document.getElementById('lightbox-img');
         this.$lightboxClose = document.getElementById('lightbox-close');
+        this.$btnSendToPhone = document.getElementById('btn-send-to-phone');
+        this.$inputSendToPhone = document.getElementById('input-send-to-phone');
+        this.$sendFeedback = document.getElementById('send-feedback');
 
         this.connectedPeerIds = new Set();
+        this._pendingSendCompletions = 0;
         this.roomId = null;
         this.receivedFiles = [];
         this._lastStatus = { state: 'waiting', key: 'connecting', vars: undefined };
@@ -40,6 +44,7 @@ class QRDropReceiver {
         Events.on('peer-disconnected', e => this._onPeerDisconnected(e.detail));
         Events.on('files-transfer-request', e => this._onFilesTransferRequest(e.detail));
         Events.on('files-received', e => this._onFilesReceived(e.detail));
+        Events.on('files-sent', _ => this._onSendToPhoneCompleted());
         window.addEventListener('lang-changed', () => this._setStatus(this._lastStatus.state, this._lastStatus.key, this._lastStatus.vars));
         window.addEventListener('beforeunload', e => {
             if (this.receivedFiles.length > 0) {
@@ -49,6 +54,8 @@ class QRDropReceiver {
         });
 
         this.$downloadAllBtn.addEventListener('click', () => this._downloadAll());
+        this.$btnSendToPhone.addEventListener('click', () => this.$inputSendToPhone.click());
+        this.$inputSendToPhone.addEventListener('change', () => this._sendToPhones());
         this.$lightboxClose.addEventListener('click', () => this._closeLightbox());
         this.$lightbox.addEventListener('click', e => {
             if (e.target === this.$lightbox) this._closeLightbox();
@@ -130,6 +137,7 @@ class QRDropReceiver {
         this.connectedPeerIds.add(peerId);
         this._setConnectedStatus();
         this.$qrFrame.classList.add('connected');
+        this.$btnSendToPhone.disabled = false;
     }
 
     _setConnectedStatus() {
@@ -146,8 +154,33 @@ class QRDropReceiver {
         if (this.connectedPeerIds.size === 0) {
             this._setStatus('waiting', 'waiting_scan');
             this.$qrFrame.classList.remove('connected');
+            this.$btnSendToPhone.disabled = true;
         } else {
             this._setConnectedStatus();
+        }
+    }
+
+    _sendToPhones() {
+        const files = Array.from(this.$inputSendToPhone.files || []);
+        this.$inputSendToPhone.value = '';
+        if (!files.length || this.connectedPeerIds.size === 0) return;
+
+        const targets = [...this.connectedPeerIds];
+        this._pendingSendCompletions = targets.length;
+        this.$sendFeedback.textContent = I18n.t('sending_to_phone');
+        this.$sendFeedback.className = 'send-feedback info';
+
+        targets.forEach(peerId => {
+            Events.fire('files-selected', { to: peerId, files: files });
+        });
+    }
+
+    _onSendToPhoneCompleted() {
+        if (this._pendingSendCompletions <= 0) return;
+        this._pendingSendCompletions--;
+        if (this._pendingSendCompletions === 0) {
+            this.$sendFeedback.textContent = I18n.t('sent_to_phone_ok');
+            this.$sendFeedback.className = 'send-feedback ok';
         }
     }
 

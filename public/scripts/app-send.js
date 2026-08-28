@@ -112,6 +112,8 @@ class QRDropSender {
         Events.on('set-progress', e => this._onProgress(e.detail));
         Events.on('files-sent', _ => this._onSent());
         Events.on('file-transfer-accepted', _ => this._onAccepted());
+        Events.on('files-transfer-request', e => this._onFilesTransferRequest(e.detail));
+        Events.on('files-received', e => this._onFilesReceived(e.detail));
 
         this.$qOriginal.addEventListener('click', () => this._setQuality('original'));
         this.$qFast.addEventListener('click', () => this._setQuality('fast'));
@@ -209,6 +211,30 @@ class QRDropSender {
         this.$progressTrack.classList.remove('show');
         this.$progressFill.style.width = '0%';
         this._setFeedback('sent_ok', 'ok');
+    }
+
+    _onFilesTransferRequest(detail) {
+        // Auto-accept: this room is private, only reachable via the QR/link
+        // the PC generated, so there's no one else it could be.
+        Events.fire('respond-to-files-transfer-request', { to: detail.peerId, accepted: true });
+    }
+
+    _onFilesReceived(detail) {
+        for (const file of detail.files) {
+            this._downloadFile(file);
+        }
+        this._setFeedback('received_from_pc', 'ok', { n: detail.files.length });
+    }
+
+    _downloadFile(file) {
+        const url = URL.createObjectURL(file);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = file.name;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
     }
 
     _setFeedback(key, kind, vars) {

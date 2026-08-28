@@ -35,7 +35,11 @@ const I18N_STRINGS = {
         text_copy: 'Copiar',
         messages: 'Mensajes',
         no_messages: 'Nada por aquí.',
-        about_link: 'Acerca de QRDrop'
+        about_link: 'Acerca de QRDrop',
+        send_to_phone: 'Enviar fotos',
+        sending_to_phone: 'Enviando…',
+        sent_to_phone_ok: 'Enviado ✓',
+        received_from_pc: 'Recibido: {n} archivo(s), descargando…'
     },
     en: {
         scan_title: 'Scan<br>to send',
@@ -73,7 +77,11 @@ const I18N_STRINGS = {
         text_copy: 'Copy',
         messages: 'Messages',
         no_messages: 'Nothing yet.',
-        about_link: 'About QRDrop'
+        about_link: 'About QRDrop',
+        send_to_phone: 'Send photos',
+        sending_to_phone: 'Sending…',
+        sent_to_phone_ok: 'Sent ✓',
+        received_from_pc: 'Received {n} file(s), downloading…'
     }
 };
 

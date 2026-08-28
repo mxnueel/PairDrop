@@ -875,11 +875,23 @@ class RTCPeer extends Peer {
     _onConnectionStateChange() {
         console.log('RTC: state changed:', this._conn.connectionState);
         switch (this._conn.connectionState) {
+            case 'connected':
+                clearTimeout(this._disconnectTimeout);
+                break;
             case 'disconnected':
-                Events.fire('peer-disconnected', this._peerId);
-                this._onError('rtc connection disconnected');
+                // 'disconnected' is often a brief ICE hiccup (e.g. mid-transfer
+                // over a TURN relay) that self-recovers within a few seconds.
+                // Give it a chance before tearing down the connection, instead
+                // of killing an otherwise-fine transfer on the first blip.
+                clearTimeout(this._disconnectTimeout);
+                this._disconnectTimeout = setTimeout(() => {
+                    if (this._conn.connectionState !== 'disconnected') return;
+                    Events.fire('peer-disconnected', this._peerId);
+                    this._onError('rtc connection disconnected');
+                }, 5000);
                 break;
             case 'failed':
+                clearTimeout(this._disconnectTimeout);
                 Events.fire('peer-disconnected', this._peerId);
                 this._onError('rtc connection failed');
                 break;

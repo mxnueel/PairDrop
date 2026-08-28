@@ -45,6 +45,14 @@
                 <span class="status-dot" id="status-dot"></span>
                 <span id="status-text" data-i18n="connecting">Conectando…</span>
             </div>
+            <div class="send-to-phone-row">
+                <button class="btn-flat-accent" id="btn-send-to-phone" disabled>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 8a2 2 0 0 1 2-2h1.2a2 2 0 0 0 1.7-.9l.6-.9a2 2 0 0 1 1.7-.9h1.6a2 2 0 0 1 1.7.9l.6.9a2 2 0 0 0 1.7.9H18a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8Z"/><circle cx="12" cy="13" r="3.5"/></svg>
+                    <span data-i18n="send_to_phone">Enviar fotos</span>
+                </button>
+                <span class="send-feedback" id="send-feedback"></span>
+            </div>
+            <input type="file" id="input-send-to-phone" accept="image/*,video/*" multiple>
         </div>
 
         <div class="right-col">
