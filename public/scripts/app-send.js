@@ -99,7 +99,16 @@ class QRDropSender {
         Events.on('peer-joined', e => this._onPeerJoined(e.detail));
         Events.on('public-room-id-invalid', _ => this._showInvalid('invalid_expired'));
         Events.on('peer-connected', _ => { this.peerConnected = true; this._setReady(true); });
-        Events.on('peer-disconnected', _ => { this.peerConnected = false; this._setReady(false); this._scheduleReconnect(); });
+        Events.on('peer-disconnected', _ => {
+            this.peerConnected = false;
+            // The disconnected peer object is gone from PeersManager; forget
+            // its id too so a fresh join can pick up whatever peer id the PC
+            // has now, instead of silently trying to send to a peer that no
+            // longer exists.
+            this.targetPeerId = null;
+            this._setReady(false);
+            this._scheduleReconnect();
+        });
         Events.on('set-progress', e => this._onProgress(e.detail));
         Events.on('files-sent', _ => this._onSent());
         Events.on('file-transfer-accepted', _ => this._onAccepted());
@@ -136,11 +145,14 @@ class QRDropSender {
     }
 
     _scheduleReconnect() {
-        clearTimeout(this._reconnectTimer);
-        this._reconnectTimer = setTimeout(() => {
-            if (this.peerConnected) return;
+        clearInterval(this._reconnectTimer);
+        this._reconnectTimer = setInterval(() => {
+            if (this.peerConnected) {
+                clearInterval(this._reconnectTimer);
+                return;
+            }
             Events.fire('join-public-room', { roomId: this.roomId, createIfInvalid: false });
-        }, 1500);
+        }, 2500);
     }
 
     _onPeers(message) {
@@ -150,7 +162,7 @@ class QRDropSender {
     }
 
     _onPeerJoined(message) {
-        if (!this.targetPeerId) this.targetPeerId = message.peer.id;
+        this.targetPeerId = message.peer.id;
     }
 
     _showInvalid(key) {

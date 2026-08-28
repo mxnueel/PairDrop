@@ -20,6 +20,9 @@ class QRDropReceiver {
         this.$emptyHint = document.getElementById('empty-hint');
         this.$downloadAllBtn = document.getElementById('btn-download-all');
         this.$downloadAllLabel = document.getElementById('download-all-label');
+        this.$lightbox = document.getElementById('lightbox-overlay');
+        this.$lightboxImg = document.getElementById('lightbox-img');
+        this.$lightboxClose = document.getElementById('lightbox-close');
 
         this.connectedPeerIds = new Set();
         this.roomId = null;
@@ -46,6 +49,13 @@ class QRDropReceiver {
         });
 
         this.$downloadAllBtn.addEventListener('click', () => this._downloadAll());
+        this.$lightboxClose.addEventListener('click', () => this._closeLightbox());
+        this.$lightbox.addEventListener('click', e => {
+            if (e.target === this.$lightbox) this._closeLightbox();
+        });
+        window.addEventListener('keydown', e => {
+            if (e.key === 'Escape') this._closeLightbox();
+        });
 
         this.localization.setInitialTranslation().catch(() => {});
 
@@ -165,6 +175,8 @@ class QRDropReceiver {
         icon.className = 'icon';
         if (isImage) {
             icon.src = url;
+            icon.classList.add('viewable');
+            icon.addEventListener('click', () => this._openLightbox(url));
         } else {
             icon.innerHTML = FILE_ICON_SVG;
         }
@@ -229,6 +241,15 @@ class QRDropReceiver {
             this.$downloadAllLabel.textContent = I18n.t('download_all');
             this.$downloadAllBtn.disabled = false;
         }
+    }
+
+    _openLightbox(url) {
+        this.$lightboxImg.src = url;
+        this.$lightbox.classList.add('show');
+    }
+
+    _closeLightbox() {
+        this.$lightbox.classList.remove('show');
     }
 
     _formatSize(bytes) {
