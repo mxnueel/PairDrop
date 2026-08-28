@@ -32,13 +32,25 @@ html, body { margin: 0; padding: 0; min-height: 100%; }
 
 body {
     font-family: "Sora", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    background: var(--paper);
+    background-color: var(--paper);
+    background-image: radial-gradient(var(--hairline) 1.4px, transparent 1.4px);
+    background-size: 26px 26px;
+    animation: bg-drift 14s linear infinite;
     color: var(--ink);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
     transition: background-color 0.35s ease, color 0.35s ease;
+}
+
+@keyframes bg-drift {
+    from { background-position: 0 0; }
+    to { background-position: 260px 130px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body { animation: none; }
 }
 
 .topbar {
@@ -67,11 +79,12 @@ body {
     font-family: var(--font-display);
     font-size: 0.6rem;
     padding: 0;
-    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.08s ease;
+    box-shadow: 0 0 0 var(--line);
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s var(--ease-out), box-shadow 0.15s var(--ease-out);
 }
 
-.icon-btn:hover { background: var(--accent-2); border-color: var(--accent-2); color: #fff; }
-.icon-btn:active { transform: scale(0.93); }
+.icon-btn:hover { background: var(--accent-2); border-color: var(--accent-2); color: #fff; transform: translate(-2px, -2px); box-shadow: 3px 3px 0 var(--line); }
+.icon-btn:active { transform: translate(0, 0) scale(0.95); box-shadow: 0 0 0 var(--line); }
 
 .theme-icon {
     width: 18px;
@@ -334,11 +347,12 @@ h1 {
     display: inline-flex;
     align-items: center;
     gap: 0.3rem;
-    transition: transform 0.08s ease, background-color 0.15s ease, color 0.15s ease;
+    box-shadow: 0 0 0 var(--line);
+    transition: transform 0.15s var(--ease-out), box-shadow 0.15s var(--ease-out), background-color 0.15s ease, color 0.15s ease;
 }
 
-.btn-flat:hover:not(:disabled) { background: var(--accent-2); border-color: var(--accent-2); color: #fff; }
-.btn-flat:active:not(:disabled) { transform: scale(0.97); }
+.btn-flat:hover:not(:disabled) { background: var(--accent-2); border-color: var(--accent-2); color: #fff; transform: translate(-2px, -2px); box-shadow: 3px 3px 0 var(--line); }
+.btn-flat:active:not(:disabled) { transform: translate(0, 0) scale(0.97); box-shadow: 0 0 0 var(--line); }
 .btn-flat:disabled { opacity: 0.35; cursor: not-allowed; }
 .btn-flat svg { width: 13px; height: 13px; }
 
@@ -346,10 +360,14 @@ h1 {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    padding: 0.75rem 0;
+    padding: 0.75rem 0.5rem;
+    margin: 0 -0.5rem;
     border-bottom: 1px solid var(--hairline);
     animation: rise 0.4s var(--ease-out) both;
+    transition: background-color 0.15s ease;
 }
+
+.file-row:hover { background: var(--hairline); }
 
 .file-row .icon {
     width: 30px;
@@ -399,15 +417,33 @@ h1 {
 
 /* Send page */
 .quality-toggle {
+    position: relative;
     display: flex;
     width: 100%;
     border: 2px solid var(--line);
 }
 
+.quality-indicator {
+    position: absolute;
+    top: 2px;
+    bottom: 2px;
+    left: 2px;
+    width: calc(50% - 2px);
+    background: var(--accent);
+    transition: transform 0.3s var(--ease-out);
+    z-index: 0;
+}
+
+.quality-toggle.fast .quality-indicator {
+    transform: translateX(100%);
+}
+
 .quality-toggle button {
+    position: relative;
+    z-index: 1;
     flex: 1;
     border: none;
-    background: var(--paper);
+    background: transparent;
     color: var(--ink);
     font-size: 0.78rem;
     font-weight: 700;
@@ -416,14 +452,17 @@ h1 {
     padding: 0.85rem 0.4rem;
     min-height: 44px;
     cursor: pointer;
-    transition: background-color 0.15s ease, color 0.15s ease;
+    transition: color 0.15s ease;
 }
 
 .quality-toggle button + button { border-left: 2px solid var(--line); }
 
 .quality-toggle button.active {
-    background: var(--accent);
     color: #fff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .quality-indicator { transition: none; }
 }
 
 .action-grid {
@@ -445,10 +484,20 @@ h1 {
     align-items: center;
     gap: 0.85rem;
     justify-content: center;
-    transition: transform 0.08s ease, opacity 0.08s ease;
+    box-shadow: 0 0 0 var(--line);
+    transition: transform 0.15s var(--ease-out), box-shadow 0.15s var(--ease-out), opacity 0.08s ease;
 }
 
-.action-btn:active { opacity: 0.85; transform: scale(0.98); }
+.action-btn:hover:not(:disabled) {
+    transform: translate(-3px, -3px);
+    box-shadow: 5px 5px 0 var(--line);
+}
+
+.action-btn:active:not(:disabled) {
+    transform: translate(0, 0);
+    box-shadow: 0 0 0 var(--line);
+    opacity: 0.9;
+}
 
 .action-btn.primary {
     background: var(--accent);
@@ -504,12 +553,12 @@ input[type=file] { display: none; }
     inset: 0;
     background: rgba(0, 0, 0, 0.55);
     display: none;
-    align-items: center;
+    align-items: flex-end;
     justify-content: center;
-    padding: 1.5rem;
+    padding: 0;
     z-index: 50;
     opacity: 0;
-    transition: opacity 0.2s ease;
+    transition: opacity 0.25s ease;
 }
 
 .about-overlay.show {
@@ -520,22 +569,27 @@ input[type=file] { display: none; }
 .about-panel {
     background: var(--paper);
     border: 2px solid var(--line);
-    max-width: 340px;
+    border-bottom: none;
+    max-width: 400px;
     width: 100%;
-    padding: 1.75rem 1.5rem;
+    padding: 1.75rem 1.5rem 2.25rem;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 1rem;
     text-align: center;
-    transform: scale(0.92) translateY(8px);
-    opacity: 0;
-    transition: transform 0.22s var(--ease-out), opacity 0.22s var(--ease-out);
+    transform: translateY(100%);
+    transition: transform 0.32s var(--ease-out);
 }
 
 .about-overlay.show .about-panel {
-    transform: scale(1) translateY(0);
-    opacity: 1;
+    transform: translateY(0);
+}
+
+@media (min-width: 640px) {
+    .about-overlay { align-items: center; padding: 1.5rem; }
+    .about-panel { border-bottom: 2px solid var(--line); transform: scale(0.92) translateY(8px); opacity: 0; transition: transform 0.22s var(--ease-out), opacity 0.22s var(--ease-out); }
+    .about-overlay.show .about-panel { transform: scale(1) translateY(0); opacity: 1; }
 }
 
 .about-panel .sq {

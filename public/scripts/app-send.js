@@ -72,6 +72,7 @@ class QRDropSender {
         this.$feedback = document.getElementById('feedback');
         this.$qOriginal = document.getElementById('q-original');
         this.$qFast = document.getElementById('q-fast');
+        this.$qualityToggle = document.getElementById('quality-toggle');
 
         this.targetPeerId = null;
         this.qualityMode = 'original';
@@ -121,6 +122,7 @@ class QRDropSender {
         this.qualityMode = mode;
         this.$qOriginal.classList.toggle('active', mode === 'original');
         this.$qFast.classList.toggle('active', mode === 'fast');
+        this.$qualityToggle.classList.toggle('fast', mode === 'fast');
     }
 
     _onWsConnected() {
