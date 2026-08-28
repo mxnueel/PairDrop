@@ -4,9 +4,9 @@
     --muted: #68686c;
     --line: #121212;
     --hairline: rgba(18, 18, 18, 0.12);
-    --accent: #39ff14;
+    --accent: #ff1f8f;
     --accent-2: #0091ff;
-    --accent-ink: #0a1f00;
+    --accent-ink: #fff;
     --success: #16a34a;
     --danger: #dc2626;
     --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
@@ -267,7 +267,7 @@ h1 {
 
 .room-code-rule {
     border: none;
-    border-top: 2px solid rgba(10, 31, 0, 0.3);
+    border-top: 2px solid rgba(255, 255, 255, 0.35);
     margin: 1.2rem 0 1rem;
 }
 
@@ -310,7 +310,7 @@ h1 {
     align-items: center;
     gap: 0.55rem;
     font-size: 0.85rem;
-    color: rgba(10, 31, 0, 0.7);
+    color: rgba(255, 255, 255, 0.85);
     margin-top: 0.7rem;
     text-transform: uppercase;
     letter-spacing: 0.04em;
@@ -320,7 +320,7 @@ h1 {
 .status-dot {
     width: 10px;
     height: 10px;
-    background: rgba(10, 31, 0, 0.45);
+    background: rgba(255, 255, 255, 0.6);
     flex-shrink: 0;
     border-radius: 50%;
     transition: background-color 0.25s var(--ease-out), transform 0.25s var(--ease-out);
