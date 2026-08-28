@@ -27,7 +27,12 @@ const I18N_STRINGS = {
         sending: 'Enviando…',
         sent_ok: 'Enviado. Puedes elegir más.',
         about_claim: 'La forma más rápida de mandar fotos y archivos entre tu celular y tu PC. Directo entre dispositivos, sin subir nada a un servidor.',
-        about_github: 'Ver en GitHub'
+        about_github: 'Ver en GitHub',
+        text_title: 'Enviar texto',
+        text_placeholder: 'Escribe algo…',
+        text_send: 'Enviar',
+        text_received_title: 'Texto recibido',
+        text_copy: 'Copiar'
     },
     en: {
         scan_title: 'Scan<br>to send',
@@ -57,7 +62,12 @@ const I18N_STRINGS = {
         sending: 'Sending…',
         sent_ok: 'Sent. You can choose more.',
         about_claim: 'The fastest way to send photos and files between your phone and your PC. Direct between devices, nothing uploaded to a server.',
-        about_github: 'View on GitHub'
+        about_github: 'View on GitHub',
+        text_title: 'Send text',
+        text_placeholder: 'Type something…',
+        text_send: 'Send',
+        text_received_title: 'Text received',
+        text_copy: 'Copy'
     }
 };
 
@@ -84,6 +94,9 @@ const I18n = {
         document.documentElement.lang = this.current;
         document.querySelectorAll('[data-i18n]').forEach(el => {
             el.innerHTML = this.t(el.getAttribute('data-i18n'));
+        });
+        document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+            el.placeholder = this.t(el.getAttribute('data-i18n-placeholder'));
         });
         const langBtn = document.getElementById('btn-lang');
         if (langBtn) langBtn.textContent = this.current.toUpperCase();

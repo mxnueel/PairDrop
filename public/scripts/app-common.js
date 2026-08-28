@@ -36,29 +36,91 @@ const ThemeCtl = {
     }
 };
 
-const AboutCtl = {
-    init() {
-        this.$overlay = document.getElementById('about-overlay');
-        this.$openBtn = document.getElementById('btn-about');
-        this.$closeBtn = document.getElementById('about-close');
-        if (!this.$overlay || !this.$openBtn) return;
+function createOverlay(overlayId, openBtnId, closeBtnId, onOpen) {
+    const $overlay = document.getElementById(overlayId);
+    const $openBtn = document.getElementById(openBtnId);
+    const $closeBtn = document.getElementById(closeBtnId);
+    if (!$overlay || !$openBtn) return null;
 
-        this.$openBtn.addEventListener('click', () => this.open());
-        this.$closeBtn.addEventListener('click', () => this.close());
-        this.$overlay.addEventListener('click', e => {
-            if (e.target === this.$overlay) this.close();
+    const ctl = {
+        $overlay,
+        open() {
+            $overlay.classList.add('show');
+            if (onOpen) onOpen();
+        },
+        close() {
+            $overlay.classList.remove('show');
+        }
+    };
+
+    $openBtn.addEventListener('click', () => ctl.open());
+    $closeBtn.addEventListener('click', () => ctl.close());
+    $overlay.addEventListener('click', e => {
+        if (e.target === $overlay) ctl.close();
+    });
+    window.addEventListener('keydown', e => {
+        if (e.key === 'Escape') ctl.close();
+    });
+
+    return ctl;
+}
+
+const TextCtl = {
+    init() {
+        this.$textarea = document.getElementById('text-input');
+        this.$sendBtn = document.getElementById('text-send');
+        this.$toast = document.getElementById('text-toast');
+        this.$toastBody = document.getElementById('text-toast-body');
+        this.$toastCopy = document.getElementById('text-toast-copy');
+        this.$toastClose = document.getElementById('text-toast-close');
+        if (!this.$sendBtn) return;
+
+        this.dialog = createOverlay('text-overlay', 'btn-text', 'text-close', () => {
+            this.$textarea.value = '';
+            this.$textarea.focus();
         });
-        window.addEventListener('keydown', e => {
-            if (e.key === 'Escape') this.close();
-        });
+
+        this.$sendBtn.addEventListener('click', () => this.send());
+        this.$toastCopy.addEventListener('click', () => this.copyReceived());
+        this.$toastClose.addEventListener('click', () => this.hideToast());
+
+        window.addEventListener('text-received', e => this.onReceived(e.detail));
     },
-    open() { this.$overlay.classList.add('show'); },
-    close() { this.$overlay.classList.remove('show'); }
+
+    targets() {
+        if (window.qrdrop && window.qrdrop.peers) return Object.keys(window.qrdrop.peers.peers);
+        if (window.qrdropSender && window.qrdropSender.targetPeerId) return [window.qrdropSender.targetPeerId];
+        return [];
+    },
+
+    send() {
+        const text = this.$textarea.value.trim();
+        if (!text) return;
+        this.targets().forEach(id => Events.fire('send-text', { to: id, text }));
+        this.dialog.close();
+    },
+
+    onReceived(detail) {
+        this._received = detail.text;
+        this.$toastBody.textContent = detail.text;
+        this.$toast.classList.add('show');
+    },
+
+    copyReceived() {
+        if (!this._received) return;
+        navigator.clipboard.writeText(this._received).catch(() => {});
+        this.hideToast();
+    },
+
+    hideToast() {
+        this.$toast.classList.remove('show');
+    }
 };
 
 window.addEventListener('DOMContentLoaded', () => {
     ThemeCtl.init();
-    AboutCtl.init();
+    createOverlay('about-overlay', 'btn-about', 'about-close');
+    TextCtl.init();
     I18n.applyStatic();
 
     const langBtn = document.getElementById('btn-lang');
