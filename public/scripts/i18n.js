@@ -34,7 +34,8 @@ const I18N_STRINGS = {
         text_received_title: 'Texto recibido',
         text_copy: 'Copiar',
         messages: 'Mensajes',
-        no_messages: 'Nada por aquí.'
+        no_messages: 'Nada por aquí.',
+        about_link: 'Acerca de QRDrop'
     },
     en: {
         scan_title: 'Scan<br>to send',
@@ -71,7 +72,8 @@ const I18N_STRINGS = {
         text_received_title: 'Text received',
         text_copy: 'Copy',
         messages: 'Messages',
-        no_messages: 'Nothing yet.'
+        no_messages: 'Nothing yet.',
+        about_link: 'About QRDrop'
     }
 };
 
