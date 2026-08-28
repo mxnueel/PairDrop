@@ -7,6 +7,57 @@ class Events {
     }
 }
 
+const COMPRESS_MAX_DIMENSION = 1600;
+const COMPRESS_QUALITY = 0.75;
+const COMPRESS_MIN_SIZE = 700 * 1024; // only worth compressing above this
+
+function compressImage(file, maxDim = COMPRESS_MAX_DIMENSION, quality = COMPRESS_QUALITY) {
+    return new Promise((resolve, reject) => {
+        const objectUrl = URL.createObjectURL(file);
+        const img = new Image();
+        img.onload = () => {
+            let { width, height } = img;
+            if (width > maxDim || height > maxDim) {
+                if (width >= height) {
+                    height = Math.round(height * (maxDim / width));
+                    width = maxDim;
+                } else {
+                    width = Math.round(width * (maxDim / height));
+                    height = maxDim;
+                }
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+            canvas.toBlob(blob => {
+                URL.revokeObjectURL(objectUrl);
+                if (!blob) { reject(new Error('toBlob failed')); return; }
+                resolve(new File([blob], file.name, { type: 'image/jpeg' }));
+            }, 'image/jpeg', quality);
+        };
+        img.onerror = (e) => { URL.revokeObjectURL(objectUrl); reject(e); };
+        img.src = objectUrl;
+    });
+}
+
+async function prepareFilesForFastMode(files) {
+    const result = [];
+    for (const file of files) {
+        const isCompressible = file.type.startsWith('image/') && file.type !== 'image/gif';
+        if (isCompressible && file.size > COMPRESS_MIN_SIZE) {
+            try {
+                result.push(await compressImage(file));
+                continue;
+            } catch (e) {
+                console.error('Compression failed, sending original:', e);
+            }
+        }
+        result.push(file);
+    }
+    return result;
+}
+
 class QRDropSender {
     constructor() {
         this.$choose = document.getElementById('choose-screen');
@@ -18,8 +69,11 @@ class QRDropSender {
         this.$progressTrack = document.getElementById('progress-track');
         this.$progressFill = document.getElementById('progress-fill');
         this.$feedback = document.getElementById('feedback');
+        this.$qOriginal = document.getElementById('q-original');
+        this.$qFast = document.getElementById('q-fast');
 
         this.targetPeerId = null;
+        this.qualityMode = 'original';
 
         this.localization = new Localization();
         this.persistentStorage = new PersistentStorage();
@@ -43,15 +97,24 @@ class QRDropSender {
         Events.on('files-sent', _ => this._onSent());
         Events.on('file-transfer-accepted', _ => this._onAccepted());
 
+        this.$qOriginal.addEventListener('click', () => this._setQuality('original'));
+        this.$qFast.addEventListener('click', () => this._setQuality('fast'));
+
         this.$btnPhotos.addEventListener('click', () => this.$inputPhotos.click());
         this.$btnFiles.addEventListener('click', () => this.$inputFiles.click());
-        this.$inputPhotos.addEventListener('change', () => this._send(this.$inputPhotos));
-        this.$inputFiles.addEventListener('change', () => this._send(this.$inputFiles));
+        this.$inputPhotos.addEventListener('change', () => this._send(this.$inputPhotos, true));
+        this.$inputFiles.addEventListener('change', () => this._send(this.$inputFiles, false));
 
         this.localization.setInitialTranslation().catch(() => {});
 
         this.server = new ServerConnection();
         this.peers = new PeersManager(this.server);
+    }
+
+    _setQuality(mode) {
+        this.qualityMode = mode;
+        this.$qOriginal.classList.toggle('active', mode === 'original');
+        this.$qFast.classList.toggle('active', mode === 'fast');
     }
 
     _onWsConnected() {
@@ -65,7 +128,6 @@ class QRDropSender {
     }
 
     _onPeerJoined(message) {
-        // In case this device is the second to join (rare), track it too.
         if (!this.targetPeerId) this.targetPeerId = message.peer.id;
     }
 
@@ -85,9 +147,15 @@ class QRDropSender {
         }
     }
 
-    _send(inputEl) {
-        const files = inputEl.files;
-        if (!files || !files.length || !this.targetPeerId) return;
+    async _send(inputEl, isPhotos) {
+        const originalFiles = Array.from(inputEl.files || []);
+        if (!originalFiles.length || !this.targetPeerId) return;
+
+        let files = originalFiles;
+        if (isPhotos && this.qualityMode === 'fast') {
+            this._setFeedback('Comprimiendo…', 'info');
+            files = await prepareFilesForFastMode(originalFiles);
+        }
 
         this.$progressTrack.classList.add('show');
         this.$progressFill.style.width = '0%';

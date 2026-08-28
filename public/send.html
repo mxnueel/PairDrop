@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#0d0e14">
+    <meta name="theme-color" content="#0b0b0d">
     <meta name="color-scheme" content="dark">
     <title>QRDrop | Enviar</title>
     <meta name="description" content="Elige fotos o archivos y envíalos directo a tu PC.">
@@ -12,30 +12,35 @@
 </head>
 <body>
     <div class="wrap">
-        <div class="brand"><span class="dot"></span>QRDrop</div>
+        <div class="wordmark">QR<span>Drop</span></div>
 
         <div id="choose-screen" style="display:flex; flex-direction:column; align-items:center; gap:1.5rem; width:100%;">
             <h1>¿Qué quieres enviar?</h1>
             <p class="subtitle">Se manda directo a la pantalla que escaneaste, sin subir a ningún servidor.</p>
 
-            <div class="card">
-                <div class="action-grid">
-                    <button class="action-btn photos" id="btn-photos" disabled>
-                        <span class="emoji">📷</span> Fotos
-                    </button>
-                    <button class="action-btn files" id="btn-files" disabled>
-                        <span class="emoji">📁</span> Archivos
-                    </button>
-                </div>
-
-                <input type="file" id="input-photos" accept="image/*,video/*" multiple>
-                <input type="file" id="input-files" multiple>
-
-                <div class="progress-track" id="progress-track">
-                    <div class="progress-fill" id="progress-fill"></div>
-                </div>
-                <div class="feedback info" id="feedback">Conectando…</div>
+            <div class="quality-toggle">
+                <button type="button" id="q-original" class="active">Calidad original</button>
+                <button type="button" id="q-fast">Envío rápido</button>
             </div>
+
+            <div class="action-grid">
+                <button class="action-btn primary" id="btn-photos" disabled>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8a2 2 0 0 1 2-2h1.2a2 2 0 0 0 1.7-.9l.6-.9a2 2 0 0 1 1.7-.9h1.6a2 2 0 0 1 1.7.9l.6.9a2 2 0 0 0 1.7.9H18a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8Z"/><circle cx="12" cy="13" r="3.5"/></svg>
+                    Fotos
+                </button>
+                <button class="action-btn secondary" id="btn-files" disabled>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"/></svg>
+                    Archivos
+                </button>
+            </div>
+
+            <input type="file" id="input-photos" accept="image/*,video/*" multiple>
+            <input type="file" id="input-files" multiple>
+
+            <div class="progress-track" id="progress-track">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <div class="feedback info" id="feedback">Conectando…</div>
         </div>
 
         <div id="invalid-screen" style="display:none; flex-direction:column; align-items:center; gap:1rem; text-align:center;">

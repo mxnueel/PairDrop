@@ -7,6 +7,8 @@ class Events {
     }
 }
 
+const FILE_ICON_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5"/></svg>';
+
 class QRDropReceiver {
     constructor() {
         this.$qrFrame = document.getElementById('qr-frame');
@@ -15,9 +17,11 @@ class QRDropReceiver {
         this.$statusText = document.getElementById('status-text');
         this.$fileList = document.getElementById('file-list');
         this.$emptyHint = document.getElementById('empty-hint');
+        this.$downloadAllBtn = document.getElementById('btn-download-all');
 
         this.connectedPeers = 0;
         this.roomId = null;
+        this.receivedFiles = [];
 
         this.localization = new Localization();
         this.persistentStorage = new PersistentStorage();
@@ -30,6 +34,8 @@ class QRDropReceiver {
         Events.on('peer-disconnected', _ => this._onPeerDisconnected());
         Events.on('files-transfer-request', e => this._onFilesTransferRequest(e.detail));
         Events.on('files-received', e => this._onFilesReceived(e.detail));
+
+        this.$downloadAllBtn.addEventListener('click', () => this._downloadAll());
 
         this.localization.setInitialTranslation().catch(() => {});
 
@@ -49,8 +55,8 @@ class QRDropReceiver {
 
         const qr = new QRCode({
             content: url.href,
-            width: 220,
-            height: 220,
+            width: 200,
+            height: 200,
             padding: 1,
             background: '#ffffff',
             color: '#111318',
@@ -63,11 +69,11 @@ class QRDropReceiver {
 
     _onPeerJoined() {
         this.connectedPeers++;
-        this._setStatus('connected', 'Teléfono conectado — listo para recibir');
+        this._setStatus('connected', 'Teléfono conectado');
     }
 
     _onPeerConnected() {
-        this._setStatus('connected', 'Teléfono conectado — listo para recibir');
+        this._setStatus('connected', 'Teléfono conectado');
     }
 
     _onPeerDisconnected() {
@@ -85,8 +91,10 @@ class QRDropReceiver {
     _onFilesReceived(detail) {
         this.$emptyHint.style.display = 'none';
         for (const file of detail.files) {
+            this.receivedFiles.push(file);
             this._addFileRow(file);
         }
+        this.$downloadAllBtn.disabled = this.receivedFiles.length === 0;
     }
 
     _addFileRow(file) {
@@ -100,7 +108,7 @@ class QRDropReceiver {
         if (isImage) {
             icon.src = url;
         } else {
-            icon.textContent = '📄';
+            icon.innerHTML = FILE_ICON_SVG;
         }
 
         const meta = document.createElement('div');
@@ -126,6 +134,46 @@ class QRDropReceiver {
         this.$fileList.prepend(row);
     }
 
+    async _downloadAll() {
+        if (!this.receivedFiles.length) return;
+
+        this.$downloadAllBtn.disabled = true;
+        const originalLabel = this.$downloadAllBtn.innerHTML;
+        this.$downloadAllBtn.textContent = 'Preparando zip…';
+
+        try {
+            const usedNames = new Set();
+            zipper.createNewZipWriter();
+            for (const file of this.receivedFiles) {
+                let name = file.name;
+                let i = 1;
+                while (usedNames.has(name)) {
+                    const dot = file.name.lastIndexOf('.');
+                    name = dot > 0
+                        ? `${file.name.slice(0, dot)} (${i})${file.name.slice(dot)}`
+                        : `${file.name} (${i})`;
+                    i++;
+                }
+                usedNames.add(name);
+                const entry = name === file.name ? file : new File([file], name, { type: file.type });
+                await zipper.addFile(entry);
+            }
+            const blobUrl = await zipper.getBlobURL();
+
+            const a = document.createElement('a');
+            a.href = blobUrl;
+            a.download = 'qrdrop.zip';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        } catch (e) {
+            console.error('Could not build zip:', e);
+        } finally {
+            this.$downloadAllBtn.innerHTML = originalLabel;
+            this.$downloadAllBtn.disabled = false;
+        }
+    }
+
     _formatSize(bytes) {
         if (bytes < 1024) return bytes + ' B';
         if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
@@ -133,7 +181,7 @@ class QRDropReceiver {
     }
 
     _setStatus(state, text) {
-        this.$statusDot.className = 'status-dot ' + state;
+        this.$statusDot.className = 'status-ring ' + state;
         this.$statusText.textContent = text;
     }
 }

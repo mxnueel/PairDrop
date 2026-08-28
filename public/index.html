@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#0d0e14">
+    <meta name="theme-color" content="#0b0b0d">
     <meta name="color-scheme" content="dark">
     <title>QRDrop | Envía fotos y archivos escaneando un QR</title>
     <meta name="description" content="Abre esta página, escanea el QR con tu celular y envía fotos o archivos directo, sin cables ni apps.">
@@ -14,21 +14,32 @@
 </head>
 <body>
     <div class="wrap">
-        <div class="brand"><span class="dot"></span>QRDrop</div>
+        <div class="wordmark">QR<span>Drop</span></div>
         <h1>Escanea para enviar</h1>
-        <p class="subtitle">Abre la cámara de tu celular, escanea el código y envía fotos o archivos directo a esta pantalla.</p>
+        <p class="subtitle">Abre la cámara de tu celular, escanea el código y manda fotos o archivos directo a esta pantalla.</p>
 
-        <div class="card">
-            <div class="qr-frame" id="qr-frame"></div>
-            <div class="room-code" id="room-code">••••••</div>
-            <div class="status-row">
-                <span class="status-dot" id="status-dot"></span>
-                <span id="status-text">Conectando…</span>
+        <div class="ticket">
+            <div class="ticket-top">
+                <div class="qr-frame" id="qr-frame"></div>
+            </div>
+            <div class="ticket-perf"></div>
+            <div class="ticket-bottom">
+                <span class="room-code" id="room-code">••••••</span>
+                <span class="status-row">
+                    <span class="status-ring" id="status-dot"></span>
+                    <span id="status-text">Conectando…</span>
+                </span>
             </div>
         </div>
 
-        <div class="card files-panel">
-            <h2>Archivos recibidos</h2>
+        <div class="panel">
+            <div class="panel-head">
+                <h2>Archivos recibidos</h2>
+                <button class="btn-ghost" id="btn-download-all" disabled>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+                    Descargar todo
+                </button>
+            </div>
             <p class="empty-hint" id="empty-hint">Aún no llega nada.</p>
             <div id="file-list"></div>
         </div>
@@ -42,6 +53,7 @@
     <script src="scripts/localization.js"></script>
     <script src="scripts/network.js"></script>
     <script src="scripts/libs/qr-code.min.js"></script>
+    <script src="scripts/libs/zip.min.js"></script>
     <script src="scripts/app-pc.js"></script>
 </body>
 </html>
