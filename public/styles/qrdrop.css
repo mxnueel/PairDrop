@@ -87,32 +87,45 @@ h1 {
     margin-top: 0.5rem;
 }
 
-/* QR block */
+/* QR block: bold color panel, this is the hero moment */
 .qr-block {
     display: flex;
     flex-direction: column;
     gap: 0;
+    background: var(--accent);
+    padding: 1.75rem 1.5rem 1.85rem;
 }
 
 .qr-frame {
     background: #fff;
-    border: 3px solid var(--line);
     padding: 14px;
     line-height: 0;
     align-self: flex-start;
-    transition: border-color 0.3s var(--ease-out);
+    opacity: 0;
+    transform: scale(0.9);
+    animation: qr-in 0.4s var(--ease-out) 0.15s both;
+}
+
+@keyframes qr-in {
+    to { opacity: 1; transform: scale(1); }
 }
 
 .qr-frame.connected {
-    border-color: var(--success);
+    animation: qr-pop 0.4s var(--ease-out);
+}
+
+@keyframes qr-pop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
 }
 
 .qr-frame svg { display: block; width: 190px; height: 190px; }
 
 .room-code-rule {
     border: none;
-    border-top: 2px solid var(--line);
-    margin: 1.1rem 0 0.9rem;
+    border-top: 2px solid rgba(255, 255, 255, 0.35);
+    margin: 1.2rem 0 1rem;
 }
 
 .room-code {
@@ -121,7 +134,22 @@ h1 {
     letter-spacing: 0.07em;
     line-height: 1.25;
     display: block;
-    color: var(--accent);
+    color: #fff;
+    perspective: 300px;
+}
+
+.room-code .rc-char {
+    display: inline-block;
+    opacity: 0;
+    transform: rotateX(-100deg);
+    transform-origin: 50% 100%;
+    animation: flip-in 0.5s var(--ease-out) both;
+}
+
+@keyframes flip-in {
+    0% { opacity: 0; transform: rotateX(-100deg); }
+    60% { opacity: 1; }
+    100% { opacity: 1; transform: rotateX(0deg); }
 }
 
 .status-row {
@@ -129,7 +157,7 @@ h1 {
     align-items: center;
     gap: 0.55rem;
     font-size: 0.85rem;
-    color: var(--muted);
+    color: rgba(255, 255, 255, 0.8);
     margin-top: 0.7rem;
     text-transform: uppercase;
     letter-spacing: 0.04em;
@@ -139,19 +167,19 @@ h1 {
 .status-dot {
     width: 10px;
     height: 10px;
-    background: var(--muted);
+    background: rgba(255, 255, 255, 0.6);
     flex-shrink: 0;
     border-radius: 50%;
     transition: background-color 0.25s var(--ease-out), transform 0.25s var(--ease-out);
 }
 
 .status-dot.waiting {
-    background: var(--accent);
+    background: #fff;
     animation: pulse 1.3s ease-in-out infinite;
 }
 
 .status-dot.connected {
-    background: var(--success);
+    background: #baffce;
     animation: pop 0.35s var(--ease-out);
 }
 
@@ -363,7 +391,12 @@ input[type=file] { display: none; }
     .status-dot.waiting,
     .status-dot.connected,
     .feedback.ok,
-    .progress-track.show {
+    .progress-track.show,
+    .qr-frame,
+    .qr-frame.connected,
+    .room-code .rc-char {
         animation: none !important;
+        opacity: 1 !important;
+        transform: none !important;
     }
 }

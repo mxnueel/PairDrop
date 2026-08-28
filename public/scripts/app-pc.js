@@ -64,7 +64,18 @@ class QRDropReceiver {
             join: true
         });
         this.$qrFrame.innerHTML = qr.svg();
-        this.$roomCode.textContent = roomId.toUpperCase();
+        this._setRoomCode(roomId.toUpperCase());
+    }
+
+    _setRoomCode(code) {
+        this.$roomCode.innerHTML = '';
+        [...code].forEach((char, i) => {
+            const span = document.createElement('span');
+            span.className = 'rc-char';
+            span.style.animationDelay = `${0.35 + i * 0.06}s`;
+            span.textContent = char;
+            this.$roomCode.appendChild(span);
+        });
     }
 
     _onPeerJoined() {
