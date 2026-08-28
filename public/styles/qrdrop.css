@@ -4,9 +4,9 @@
     --muted: #68686c;
     --line: #121212;
     --hairline: rgba(18, 18, 18, 0.12);
-    --accent: #ff3d1f;
+    --accent: #39ff14;
     --accent-2: #0091ff;
-    --accent-ink: #fff;
+    --accent-ink: #0a1f00;
     --success: #16a34a;
     --danger: #dc2626;
     --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
@@ -267,7 +267,7 @@ h1 {
 
 .room-code-rule {
     border: none;
-    border-top: 2px solid rgba(255, 255, 255, 0.35);
+    border-top: 2px solid rgba(10, 31, 0, 0.3);
     margin: 1.2rem 0 1rem;
 }
 
@@ -278,7 +278,7 @@ h1 {
     padding-left: 0.18em;
     line-height: 2;
     display: block;
-    color: #fff;
+    color: var(--accent-ink);
     perspective: 300px;
 }
 
@@ -287,7 +287,11 @@ h1 {
     opacity: 0;
     transform: rotateX(-100deg);
     transform-origin: 50% 100%;
-    animation: flip-in 0.5s var(--ease-out) both;
+    animation-name: flip-in, float;
+    animation-duration: 0.5s, 2.4s;
+    animation-timing-function: var(--ease-out), ease-in-out;
+    animation-iteration-count: 1, infinite;
+    animation-fill-mode: both, none;
 }
 
 @keyframes flip-in {
@@ -296,12 +300,17 @@ h1 {
     100% { opacity: 1; transform: rotateX(0deg); }
 }
 
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+
 .status-row {
     display: flex;
     align-items: center;
     gap: 0.55rem;
     font-size: 0.85rem;
-    color: rgba(255, 255, 255, 0.8);
+    color: rgba(10, 31, 0, 0.7);
     margin-top: 0.7rem;
     text-transform: uppercase;
     letter-spacing: 0.04em;
@@ -311,19 +320,19 @@ h1 {
 .status-dot {
     width: 10px;
     height: 10px;
-    background: rgba(255, 255, 255, 0.6);
+    background: rgba(10, 31, 0, 0.45);
     flex-shrink: 0;
     border-radius: 50%;
     transition: background-color 0.25s var(--ease-out), transform 0.25s var(--ease-out);
 }
 
 .status-dot.waiting {
-    background: #fff;
+    background: var(--accent-ink);
     animation: pulse 1.3s ease-in-out infinite;
 }
 
 .status-dot.connected {
-    background: #baffce;
+    background: var(--accent-2);
     animation: pop 0.35s var(--ease-out);
 }
 
@@ -481,7 +490,7 @@ h1 {
 .quality-toggle button + button { border-left: 2px solid var(--line); }
 
 .quality-toggle button.active {
-    color: #fff;
+    color: var(--accent-ink);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -524,7 +533,7 @@ h1 {
 
 .action-btn.primary {
     background: var(--accent);
-    color: #fff;
+    color: var(--accent-ink);
     border: 2px solid var(--accent);
 }
 
@@ -650,7 +659,7 @@ input[type=file] { display: none; }
     transition: background-color 0.15s ease, color 0.15s ease;
 }
 
-.about-panel a.about-github:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+.about-panel a.about-github:hover { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 .about-panel a.about-github svg { width: 15px; height: 15px; }
 
 .about-close {

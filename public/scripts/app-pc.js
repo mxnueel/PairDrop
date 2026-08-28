@@ -102,7 +102,9 @@ class QRDropReceiver {
         [...code].forEach((char, i) => {
             const span = document.createElement('span');
             span.className = 'rc-char';
-            span.style.animationDelay = `${0.35 + i * 0.06}s`;
+            const flipDelay = 0.35 + i * 0.06;
+            const floatDelay = flipDelay + 0.55 + i * 0.08;
+            span.style.animationDelay = `${flipDelay}s, ${floatDelay}s`;
             span.textContent = char;
             this.$roomCode.appendChild(span);
         });
