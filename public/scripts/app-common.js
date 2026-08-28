@@ -68,12 +68,10 @@ function createOverlay(overlayId, openBtnId, closeBtnId, onOpen) {
 const TextCtl = {
     init() {
         this.$textarea = document.getElementById('text-input');
-        this.$sendBtn = document.getElementById('text-send');
-        this.$toast = document.getElementById('text-toast');
-        this.$toastBody = document.getElementById('text-toast-body');
-        this.$toastCopy = document.getElementById('text-toast-copy');
-        this.$toastClose = document.getElementById('text-toast-close');
-        if (!this.$sendBtn) return;
+        this.$sendBtn = document.getElementById('text-send-btn');
+        this.$log = document.getElementById('text-log');
+        this.$emptyHint = document.getElementById('text-empty-hint');
+        if (!this.$sendBtn || !this.$log) return;
 
         this.dialog = createOverlay('text-overlay', 'btn-text', 'text-close', () => {
             this.$textarea.value = '';
@@ -81,9 +79,6 @@ const TextCtl = {
         });
 
         this.$sendBtn.addEventListener('click', () => this.send());
-        this.$toastCopy.addEventListener('click', () => this.copyReceived());
-        this.$toastClose.addEventListener('click', () => this.hideToast());
-
         window.addEventListener('text-received', e => this.onReceived(e.detail));
     },
 
@@ -101,19 +96,25 @@ const TextCtl = {
     },
 
     onReceived(detail) {
-        this._received = detail.text;
-        this.$toastBody.textContent = detail.text;
-        this.$toast.classList.add('show');
-    },
+        this.$emptyHint.style.display = 'none';
 
-    copyReceived() {
-        if (!this._received) return;
-        navigator.clipboard.writeText(this._received).catch(() => {});
-        this.hideToast();
-    },
+        const row = document.createElement('div');
+        row.className = 'file-row';
 
-    hideToast() {
-        this.$toast.classList.remove('show');
+        const meta = document.createElement('div');
+        meta.className = 'meta';
+        meta.textContent = detail.text;
+
+        const copy = document.createElement('button');
+        copy.className = 'dl';
+        copy.textContent = I18n.t('text_copy');
+        copy.addEventListener('click', () => {
+            navigator.clipboard.writeText(detail.text).catch(() => {});
+        });
+
+        row.appendChild(meta);
+        row.appendChild(copy);
+        this.$log.prepend(row);
     }
 };
 

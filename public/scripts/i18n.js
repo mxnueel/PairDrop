@@ -32,7 +32,9 @@ const I18N_STRINGS = {
         text_placeholder: 'Escribe algo…',
         text_send: 'Enviar',
         text_received_title: 'Texto recibido',
-        text_copy: 'Copiar'
+        text_copy: 'Copiar',
+        messages: 'Mensajes',
+        no_messages: 'Nada por aquí.'
     },
     en: {
         scan_title: 'Scan<br>to send',
@@ -67,7 +69,9 @@ const I18N_STRINGS = {
         text_placeholder: 'Type something…',
         text_send: 'Send',
         text_received_title: 'Text received',
-        text_copy: 'Copy'
+        text_copy: 'Copy',
+        messages: 'Messages',
+        no_messages: 'Nothing yet.'
     }
 };
 

@@ -12,6 +12,7 @@ const FILE_ICON_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor
 class QRDropReceiver {
     constructor() {
         this.$qrFrame = document.getElementById('qr-frame');
+        this.$qrSvg = document.getElementById('qr-svg');
         this.$roomCode = document.getElementById('room-code');
         this.$statusDot = document.getElementById('status-dot');
         this.$statusText = document.getElementById('status-text');
@@ -37,6 +38,12 @@ class QRDropReceiver {
         Events.on('files-transfer-request', e => this._onFilesTransferRequest(e.detail));
         Events.on('files-received', e => this._onFilesReceived(e.detail));
         window.addEventListener('lang-changed', () => this._setStatus(this._lastStatus.state, this._lastStatus.key, this._lastStatus.vars));
+        window.addEventListener('beforeunload', e => {
+            if (this.receivedFiles.length > 0) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
 
         this.$downloadAllBtn.addEventListener('click', () => this._downloadAll());
 
@@ -48,10 +55,23 @@ class QRDropReceiver {
 
     _onWsConnected() {
         this._setStatus('waiting', 'waiting_scan');
-        Events.fire('create-public-room');
+        // Reuse the same room across reconnects/reloads so an already-displayed
+        // QR keeps working for anyone who hasn't scanned it yet.
+        const stored = localStorage.getItem('qrdrop_room_id');
+        if (stored) {
+            this._renderRoom(stored);
+            Events.fire('join-public-room', { roomId: stored, createIfInvalid: true });
+        } else {
+            Events.fire('create-public-room');
+        }
     }
 
     _onRoomCreated(roomId) {
+        localStorage.setItem('qrdrop_room_id', roomId);
+        this._renderRoom(roomId);
+    }
+
+    _renderRoom(roomId) {
         this.roomId = roomId;
         const url = new URL('send.html', location.href);
         url.searchParams.set('room_id', roomId);
@@ -66,7 +86,7 @@ class QRDropReceiver {
             ecl: 'M',
             join: true
         });
-        this.$qrFrame.innerHTML = qr.svg();
+        this.$qrSvg.innerHTML = qr.svg();
         this._setRoomCode(roomId.toUpperCase());
     }
 
