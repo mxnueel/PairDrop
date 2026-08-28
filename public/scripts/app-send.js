@@ -75,6 +75,7 @@ class QRDropSender {
 
         this.targetPeerId = null;
         this.qualityMode = 'original';
+        this.peerConnected = false;
         this._lastFeedback = { key: 'connecting', kind: 'info' };
         this._lastInvalidKey = null;
 
@@ -96,8 +97,8 @@ class QRDropSender {
         Events.on('peers', e => this._onPeers(e.detail));
         Events.on('peer-joined', e => this._onPeerJoined(e.detail));
         Events.on('public-room-id-invalid', _ => this._showInvalid('invalid_expired'));
-        Events.on('peer-connected', _ => this._setReady(true));
-        Events.on('peer-disconnected', _ => this._setReady(false));
+        Events.on('peer-connected', _ => { this.peerConnected = true; this._setReady(true); });
+        Events.on('peer-disconnected', _ => { this.peerConnected = false; this._setReady(false); this._scheduleReconnect(); });
         Events.on('set-progress', e => this._onProgress(e.detail));
         Events.on('files-sent', _ => this._onSent());
         Events.on('file-transfer-accepted', _ => this._onAccepted());
@@ -123,7 +124,21 @@ class QRDropSender {
     }
 
     _onWsConnected() {
+        // A backgrounded tab (e.g. while the native photo picker is open) can
+        // silently reconnect the WebSocket. Rejoining the room in that case
+        // makes the server force a leave+rejoin cycle that tears down an
+        // already-working RTC connection. Only (re)join when we don't
+        // already have one.
+        if (this.peerConnected) return;
         Events.fire('join-public-room', { roomId: this.roomId, createIfInvalid: false });
+    }
+
+    _scheduleReconnect() {
+        clearTimeout(this._reconnectTimer);
+        this._reconnectTimer = setTimeout(() => {
+            if (this.peerConnected) return;
+            Events.fire('join-public-room', { roomId: this.roomId, createIfInvalid: false });
+        }, 1500);
     }
 
     _onPeers(message) {

@@ -21,7 +21,7 @@ class QRDropReceiver {
         this.$downloadAllBtn = document.getElementById('btn-download-all');
         this.$downloadAllLabel = document.getElementById('download-all-label');
 
-        this.connectedPeers = 0;
+        this.connectedPeerIds = new Set();
         this.roomId = null;
         this.receivedFiles = [];
         this._lastStatus = { state: 'waiting', key: 'connecting', vars: undefined };
@@ -32,9 +32,9 @@ class QRDropReceiver {
 
         Events.on('public-room-created', e => this._onRoomCreated(e.detail));
         Events.on('ws-connected', _ => this._onWsConnected());
-        Events.on('peer-joined', _ => this._onPeerJoined());
-        Events.on('peer-connected', _ => this._onPeerConnected());
-        Events.on('peer-disconnected', _ => this._onPeerDisconnected());
+        Events.on('peer-joined', e => this._onPeerJoined(e.detail.peer.id));
+        Events.on('peer-connected', e => this._onPeerConnected(e.detail.peerId));
+        Events.on('peer-disconnected', e => this._onPeerDisconnected(e.detail));
         Events.on('files-transfer-request', e => this._onFilesTransferRequest(e.detail));
         Events.on('files-received', e => this._onFilesReceived(e.detail));
         window.addEventListener('lang-changed', () => this._setStatus(this._lastStatus.state, this._lastStatus.key, this._lastStatus.vars));
@@ -54,9 +54,16 @@ class QRDropReceiver {
     }
 
     _onWsConnected() {
+        // A reconnect (tab backgrounded/throttled, brief network drop) fires
+        // this again. Rejoining while phones are already connected makes the
+        // server force a leave+rejoin cycle that disconnects them and
+        // double-counts them when re-announced. Only skip if we have
+        // something to protect; with no live peers, rejoining is safe and
+        // needed to restore server-side room membership for new scanners.
+        if (this.connectedPeerIds.size > 0) return;
         this._setStatus('waiting', 'waiting_scan');
-        // Reuse the same room across reconnects/reloads so an already-displayed
-        // QR keeps working for anyone who hasn't scanned it yet.
+        // Reuse the same room across reloads so an already-displayed QR
+        // keeps working for anyone who hasn't scanned it yet.
         const stored = localStorage.getItem('qrdrop_room_id');
         if (stored) {
             this._renderRoom(stored);
@@ -101,28 +108,30 @@ class QRDropReceiver {
         });
     }
 
-    _onPeerJoined() {
-        this.connectedPeers++;
+    _onPeerJoined(peerId) {
+        this.connectedPeerIds.add(peerId);
         this._setConnectedStatus();
         this.$qrFrame.classList.add('connected');
     }
 
-    _onPeerConnected() {
+    _onPeerConnected(peerId) {
+        this.connectedPeerIds.add(peerId);
         this._setConnectedStatus();
         this.$qrFrame.classList.add('connected');
     }
 
     _setConnectedStatus() {
-        if (this.connectedPeers > 1) {
-            this._setStatus('connected', 'phones_connected', { n: this.connectedPeers });
+        const n = this.connectedPeerIds.size;
+        if (n > 1) {
+            this._setStatus('connected', 'phones_connected', { n });
         } else {
             this._setStatus('connected', 'phone_connected');
         }
     }
 
-    _onPeerDisconnected() {
-        this.connectedPeers = Math.max(0, this.connectedPeers - 1);
-        if (this.connectedPeers === 0) {
+    _onPeerDisconnected(peerId) {
+        this.connectedPeerIds.delete(peerId);
+        if (this.connectedPeerIds.size === 0) {
             this._setStatus('waiting', 'waiting_scan');
             this.$qrFrame.classList.remove('connected');
         } else {
