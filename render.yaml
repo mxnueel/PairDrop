@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: qrdrop
+    env: docker
+    plan: free
+    healthCheckPath: /
+    envVars:
+      - key: RATE_LIMIT
+        value: "true"
